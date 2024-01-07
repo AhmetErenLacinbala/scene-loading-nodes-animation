@@ -1,0 +1,2 @@
+body,html{background-color:#1e1e1e;margin:0;overflow:hidden;padding:0}.circle-path{animation:draw .5s ease-in-out forwards}.circle-fill{animation:draw-fill .5s ease-in-out forwards;opacity:0}.text{color:#fff}.line{stroke-dasharray:100;stroke-dashoffset:100;animation:dash 1s ease-in-out forwards}@keyframes draw{to{stroke-dashoffset:0}}@keyframes draw-fill{to{opacity:1}}@keyframes dash{to{stroke-dashoffset:0}}
+/*# sourceMappingURL=main.35c9e994.css.map*/

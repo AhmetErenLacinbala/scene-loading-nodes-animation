@@ -5,7 +5,7 @@ import "./circle.css"
 
 const Circle = (props) => {
     const { nextData, data, current, setCurrent } = props;
-    const { loc, color, text, layer } = data;
+    const { loc, color, text, layer, deleteNode } = data;
     const r = 4.5;
     const strokeColors = {
         neutral: "#2E3035",
@@ -48,6 +48,21 @@ const Circle = (props) => {
                 strokeWidth="0.4"
                 fill="none"
                 className="circle-path" />
+            {deleteNode ? (
+                <circle
+
+                    style={{
+                        animationDelay: `${layer * 0.1}s`
+                    }}
+                    cx={loc.x} cy={loc.y} r={r}
+                    strokeDashoffset={r * 3.14 * 2 + 1}
+                    strokeDasharray={r * 3.14 * 2 + 1}
+                    stroke="red"
+                    strokeWidth="0.4"
+                    fill="none"
+                    className="circle-path" />
+            ) : ""}
+
             <circle
 
                 style={{

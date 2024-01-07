@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Circle from './circle/circle.js';
 
-const circles = [
+const initialCircles = [
   {
+    deleteNode: false,
     mesh: false,
     id: 0,
     layer: 0,
@@ -15,6 +16,7 @@ const circles = [
     },
   },
   {
+    deleteNode: false,
     mesh: false,
     id: 1,
     layer: 1,
@@ -27,6 +29,7 @@ const circles = [
     }
   },
   {
+    deleteNode: false,
     mesh: false,
     id: 2,
     layer: 1,
@@ -39,6 +42,7 @@ const circles = [
     }
   },
   {
+    deleteNode: false,
     mesh: false,
     id: 3,
     layer: 1,
@@ -51,6 +55,7 @@ const circles = [
     }
   },
   {
+    deleteNode: false,
     mesh: false,
     id: 4,
     layer: 1,
@@ -64,6 +69,7 @@ const circles = [
   },
   //---------------------------------------
   {
+    deleteNode: false,
     mesh: false,
     id: 5,
     layer: 2,
@@ -77,6 +83,7 @@ const circles = [
   },
 
   {
+    deleteNode: false,
     mesh: true,
     id: 6,
     layer: 2,
@@ -90,6 +97,7 @@ const circles = [
   },
 
   {
+    deleteNode: false,
     mesh: true,
     id: 7,
     layer: 2,
@@ -103,6 +111,7 @@ const circles = [
   },
 
   {
+    deleteNode: false,
     mesh: true,
     id: 8,
     layer: 2,
@@ -115,39 +124,62 @@ const circles = [
     }
   },
   {
+    deleteNode: false,
     mesh: true,
     id: 9,
-    layer: 2 - 2,
+    layer: 2,
     text: "Skybox",
     color: "gray",
     next: [],
     loc: {
       x: 90,
       y: 40
-    }
+    },
   },
-
-
-
 ]
 
+
 const App = () => {
+  const [circles, setCircles] = useState([...initialCircles]);
   const [current, setCurrent] = useState({
     current: {
       ...circles[0]
     },
     nextIndex: -1
   });
+
+  useEffect(() => {
+    console.log(circles);
+  })
+
   useEffect(() => {
     function handleKeyPress(e) {
-      if (e.key == "ArrowRight") {
-
+      if (e.key === "ArrowRight") {
         setCurrent({
           ...current,
           nextIndex: ++current.nextIndex
         })
+        if (current.current.next[current.nextIndex] !== undefined) {
+          let nextTemp = circles.find(circle => circle.id === current.current.next[current.nextIndex]);
+
+          setCircles((circles) =>
+            circles.map((circle) => {
+              if (circle.id === nextTemp.id && nextTemp.next.length === 0 && !circle.mesh) {
+                return ({
+                  ...circle,
+                  deleteNode: true,
+                })
+              }
+
+              else return ({
+                ...circle,
+              })
+
+            }))
+
+        }
       }
-      console.log(current, e.key);
+      //console.log(current, e.key);
     };
     document.addEventListener("keydown", handleKeyPress);
     return () => {

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Circle Drawing Itself</title>
+    <style>
+      svg {
+        width: 200px;
+        height: 200px;
+      }
+      .circle-path {
+        fill: none;
+        stroke: black;
+        stroke-width: 4;
+        stroke-dasharray: 565; /* Approximate circumference of the circle */
+        stroke-dashoffset: 565;
+        animation: draw 2s forwards;
+      }
+      @keyframes draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="45" class="circle-path" />
+      <text x="50" y="55" text-anchor="middle">Inside the Circle</text>
+    </svg>
+  </body>
+</html>

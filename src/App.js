@@ -22,7 +22,7 @@ const initialCircles = [
     layer: 1,
     text: "Camera",
     color: "gray",
-    next: [],
+    next: [5,6],
     loc: {
       x: 10,
       y: 20
@@ -35,7 +35,7 @@ const initialCircles = [
     layer: 1,
     text: "Empty",
     color: "gray",
-    next: [5, 6],
+    next: [],
     loc: {
       x: 35,
       y: 20
@@ -145,7 +145,8 @@ const App = () => {
     current: {
       ...circles[0]
     },
-    nextIndex: -1
+    nextIndex: -1,
+    path: [0]
   });
 
   useEffect(() => {
@@ -155,9 +156,11 @@ const App = () => {
   useEffect(() => {
     function handleKeyPress(e) {
       if (e.key === "ArrowRight") {
-        setCurrent({
-          ...current,
-          nextIndex: ++current.nextIndex
+        setCurrent((prev)=>{
+          return({
+            ...prev,
+            nextIndex: ++prev.nextIndex
+          })
         })
         if (current.current.next[current.nextIndex] !== undefined) {
           let nextTemp = circles.find(circle => circle.id === current.current.next[current.nextIndex]);
@@ -176,6 +179,16 @@ const App = () => {
               })
 
             }))
+            setCurrent((prev)=>{
+              return({
+                current: {...nextTemp},
+                nextIndex : -1,
+                path: [...prev.path, nextTemp.id]
+              })
+            })
+            console.log("next: ",nextTemp);
+            console.log(current);
+            console.log(current.current.text);
 
         }
       }

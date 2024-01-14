@@ -1,79 +1,186 @@
-import React from 'react';
-import "./circle.css"
+import React, { useEffect, useState } from 'react';
+import "./circle.css";
+import { v4 as uuidv4 } from "uuid";
 
+function Text(props) {
+    const { text, circle, r } = props;
+    const { loc } = circle;
+    const yOffset = r / 8;
+    const [bottomTextClass, setBottomTextClass] = useState("");
+    const [topTextClass, setTopTextClass] = useState("");
+    const [bottomTextContent, setBottomTextContent] = useState([]);
 
+    useEffect(() => {
+        if (circle.mesh && circle.checked) {
+            setBottomTextClass("textBottomAfter");
+            setTopTextClass("textTopAfter1");
+            setBottomTextContent(['(Has Mesh)']);
+        }
+        else if (circle.deleteNode) {
+            setBottomTextClass("textBottomAfter");
+            setTopTextClass("textTopAfter1");
+            if (circle.next.length > 0) {
+                setBottomTextContent(['(Empty Node)', 'Delete']);
+            }
+            else {
+                setBottomTextContent(['(No Mesh)', 'Delete']);
+            }
+        }
+    }, [circle]);
+
+    return (
+        <>
+            <text
+                fontSize="1.8"
+                fill='white'
+                className={`text ${topTextClass}`}
+                x={loc.x}
+                y={loc.y + yOffset}
+                textAnchor="middle">
+                {text}
+            </text>
+            {circle.checked && (
+                <text
+                    fontSize="1.4"
+                    fill={circle.deleteNode ? "red" : "white"}
+                    className={`text textBottom ${bottomTextClass}`}
+                    x={loc.x}
+                    y={loc.y + yOffset}
+                    textAnchor="middle">
+                    {bottomTextContent.map((line, index) => (
+                        <tspan key={index} x={loc.x} dy={index === 0 ? 0 : "1em"}>
+                            {line}
+                        </tspan>
+                    ))}
+                </text>
+            )}
+        </>
+    );
+}
+
+function Line(props) {
+    const { data } = props;
+    const { checkLine, isLineInPath } = data;
+
+    const [isInit, setInit] = useState(false);
+
+    useEffect(() => {
+        if (isLineInPath) {
+            setInit(true);
+        }
+    }, [isLineInPath]);
+
+    if (checkLine) {
+        if (isLineInPath) {
+            return <line {...data} className="line line-white line-forward" />;
+        } else if (isInit && !isLineInPath) {
+            return <line {...data} className="line line-white line-reverse" />;
+        } else {
+            return null;
+        }
+    }
+
+    return <line {...data} />;
+}
 
 const Circle = (props) => {
-    const { nextData, data, current, setCurrent } = props;
-    const { loc, color, text, layer, deleteNode } = data;
+    const { nextData, data, current, setCurrent, } = props;
+    const { loc, color, text, layer, deleteNode, checked } = data;
     const r = 4.5;
-    const strokeColors = {
-        neutral: "#2E3035",
-        false: "#BA4E4E"
-    }
+
+    const isInPath = (circleId) => {
+        return current.path.includes(circleId);
+    };
+
+
     return (
         <>
             {nextData.map((nextCircle, key) => {
+                const isLineInPath = isInPath(data.id) && isInPath(nextCircle.id);
+                const lineKey = `line-${data.id}-${nextCircle.id}`;
+                const lineWhiteKey = `line-white-${data.id}-${nextCircle.id}`;
                 return (
                     <>
-                        <line
-                            style={{
-                                animationDelay: `${layer * 0.4 + 0.2}s`,
-                            }}
-                            className="line" x1={loc.x} y1={loc.y} x2={nextCircle.loc.x} y2={nextCircle.loc.y} stroke="#2E3035" strokeWidth="0.5" />
+                        <Line
+                            layer={layer}
+                            key={lineKey}
+                            data={{
 
-                        {current.current.id === data.id && current.nextIndex >= key ? (
-                            <line
-                                style={{
-                                    animationDelay: `${layer * 0.4 + 0.2}s`,
-                                }}
-                                className="line" x1={loc.x} y1={loc.y} x2={nextCircle.loc.x} y2={nextCircle.loc.y} stroke="white" strokeWidth="0.5" />
-                        ) : null}
+                                className: "line line-forward",
+                                x1: loc.x,
+                                y1: loc.y,
+                                x2: nextCircle.loc.x,
+                                y2: nextCircle.loc.y,
+                                checkLine: false,
+                                isLineInPath: isLineInPath
 
+                            }} />
+
+                        <Line
+                            key={lineWhiteKey} data={{
+                                className: "line line-white line-forward",
+                                x1: loc.x,
+                                y1: loc.y,
+                                x2: nextCircle.loc.x,
+                                y2: nextCircle.loc.y,
+                                checkLine: true,
+                                isLineInPath: isLineInPath
+                            }} />
                     </>
-
-                )
-            }
-            )}
-
+                );
+            })}
             <circle
-
                 style={{
                     animationDelay: `${layer * 0.1}s`
                 }}
-                cx={loc.x} cy={loc.y} r={r}
-                strokeDashoffset={r * 3.14 * 2 + 1}
-                strokeDasharray={r * 3.14 * 2 + 1}
-                stroke="#2E3035"
+                className={"circle-path"}
+                cx={loc.x} cy={loc.y}
+                r={r}
+                strokeDashoffset={r * Math.PI * 2 + 1}
+                strokeDasharray={r * Math.PI * 2 + 1}
+                stroke={"#2E3035"}
                 strokeWidth="0.4"
-                fill="none"
-                className="circle-path" />
-            {deleteNode ? (
-                <circle
+                fill="none" />
 
+            {isInPath(data.id) &&
+                <circle
                     style={{
-                        animationDelay: `${layer * 0.1}s`
                     }}
-                    cx={loc.x} cy={loc.y} r={r}
-                    strokeDashoffset={r * 3.14 * 2 + 1}
-                    strokeDasharray={r * 3.14 * 2 + 1}
+                    className={"circle-path circle-path-white"}
+                    cx={loc.x} cy={loc.y}
+                    r={r}
+                    strokeDashoffset={r * Math.PI * 2 + 1}
+                    strokeDasharray={r * Math.PI * 2 + 1}
+                    stroke={"white"}
+                    strokeWidth="0.4"
+                    fill="none" />}
+
+            {deleteNode && (
+                <circle
+                    cx={loc.x}
+                    cy={loc.y}
+                    r={r}
+                    strokeDashoffset={r * Math.PI * 2 + 1}
+                    strokeDasharray={r * Math.PI * 2 + 1}
                     stroke="red"
                     strokeWidth="0.4"
                     fill="none"
                     className="circle-path" />
-            ) : ""}
+            )}
+
+
 
             <circle
-
                 style={{
                     animationDelay: `${layer * 0.1 + 0.5}s`
                 }}
-                cx={loc.x} cy={loc.y} r={r - 0.1}
+                cx={loc.x}
+                cy={loc.y}
+                r={r - 0.1}
                 fill='#474747'
                 className="circle-fill" />
-            <text fontSize="2" fill='white' className='text' x={loc.x} y={loc.y + r / 8} text-anchor="middle">{text}</text>
 
-            <text fontSize="2" fill='white' className='text' x={loc.x} y={loc.y + r / 8} text-anchor="middle">{text}</text>
+            <Text text={text} circle={data} r={r} />
         </>
     );
 }

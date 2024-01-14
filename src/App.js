@@ -4,6 +4,7 @@ import Circle from './circle/circle.js';
 const initialCircles = [
   {
     deleteNode: false,
+    checked: false,
     mesh: false,
     id: 0,
     layer: 0,
@@ -17,12 +18,13 @@ const initialCircles = [
   },
   {
     deleteNode: false,
+    checked: false,
     mesh: false,
     id: 1,
     layer: 1,
     text: "Camera",
     color: "gray",
-    next: [5,6],
+    next: [],
     loc: {
       x: 10,
       y: 20
@@ -30,12 +32,13 @@ const initialCircles = [
   },
   {
     deleteNode: false,
+    checked: false,
     mesh: false,
     id: 2,
     layer: 1,
     text: "Empty",
     color: "gray",
-    next: [],
+    next: [5, 6],
     loc: {
       x: 35,
       y: 20
@@ -43,6 +46,7 @@ const initialCircles = [
   },
   {
     deleteNode: false,
+    checked: false,
     mesh: false,
     id: 3,
     layer: 1,
@@ -56,6 +60,7 @@ const initialCircles = [
   },
   {
     deleteNode: false,
+    checked: false,
     mesh: false,
     id: 4,
     layer: 1,
@@ -70,6 +75,7 @@ const initialCircles = [
   //---------------------------------------
   {
     deleteNode: false,
+    checked: false,
     mesh: false,
     id: 5,
     layer: 2,
@@ -84,6 +90,7 @@ const initialCircles = [
 
   {
     deleteNode: false,
+    checked: false,
     mesh: true,
     id: 6,
     layer: 2,
@@ -98,7 +105,8 @@ const initialCircles = [
 
   {
     deleteNode: false,
-    mesh: true,
+    checked: false,
+    mesh: false,
     id: 7,
     layer: 2,
     text: "Camera 2",
@@ -112,7 +120,8 @@ const initialCircles = [
 
   {
     deleteNode: false,
-    mesh: true,
+    checked: false,
+    mesh: false,
     id: 8,
     layer: 2,
     text: "Armature",
@@ -125,6 +134,7 @@ const initialCircles = [
   },
   {
     deleteNode: false,
+    checked: false,
     mesh: true,
     id: 9,
     layer: 2,
@@ -150,55 +160,73 @@ const App = () => {
   });
 
   useEffect(() => {
-    console.log(circles);
-  })
-
-  useEffect(() => {
     function handleKeyPress(e) {
       if (e.key === "ArrowRight") {
-        setCurrent((prev)=>{
-          return({
-            ...prev,
-            nextIndex: ++prev.nextIndex
-          })
-        })
-        if (current.current.next[current.nextIndex] !== undefined) {
-          let nextTemp = circles.find(circle => circle.id === current.current.next[current.nextIndex]);
+        setCurrent((prev) => {
+          if (prev.nextIndex < prev.current.next.length - 1) {
+            const newNextIndex = prev.nextIndex + 1;
+            const nextId = prev.current.next[newNextIndex];
+            const nextTemp = circles.find(circle => circle.id === nextId);
 
-          setCircles((circles) =>
-            circles.map((circle) => {
-              if (circle.id === nextTemp.id && nextTemp.next.length === 0 && !circle.mesh) {
-                return ({
-                  ...circle,
-                  deleteNode: true,
-                })
+            setCircles((prevCircles) => prevCircles.map(circle => {
+              if (circle.id === nextTemp.id) {
+                return { ...circle, checked: true };
+              }
+              return circle;
+            }));
+
+
+            if (!nextTemp.mesh && nextTemp.next.length === 0) {
+              setCircles((prev) => prev.map(circle => {
+                if (circle.id === nextTemp.id) {
+                  return { ...circle, deleteNode: true, }
+                }
+                return { ...circle }
+              }))
+            }
+
+
+            return {
+              current: { ...nextTemp },
+              nextIndex: -1,
+              path: [...prev.path, nextTemp.id],
+            };
+          } else {
+            if (prev.path.length > 1) {
+              const newPath = [...prev.path];
+              const currentId = newPath.pop();
+              const parentId = newPath[newPath.length - 1];
+              const parentTemp = circles.find(circle => circle.id === parentId);
+              const parentNextIndex = parentTemp.next.indexOf(currentId);
+              const children = circles.filter(circle => parentTemp.next.includes(circle.id));
+
+              if (children.every(child => child.deleteNode)) {
+                setCircles((prev) => prev.map(circle => {
+                  if (circle.id === parentTemp.id) {
+                    return { ...circle, deleteNode: true }
+                  }
+                  return { ...circle }
+                }))
               }
 
-              else return ({
-                ...circle,
-              })
-
-            }))
-            setCurrent((prev)=>{
-              return({
-                current: {...nextTemp},
-                nextIndex : -1,
-                path: [...prev.path, nextTemp.id]
-              })
-            })
-            console.log("next: ",nextTemp);
-            console.log(current);
-            console.log(current.current.text);
-
-        }
+              return {
+                current: { ...parentTemp },
+                nextIndex: parentNextIndex,
+                path: newPath,
+              };
+            }
+          }
+          return prev;
+        });
       }
-      //console.log(current, e.key);
-    };
+    }
+
     document.addEventListener("keydown", handleKeyPress);
     return () => {
       document.removeEventListener("keydown", handleKeyPress);
     };
-  }, [])
+  }, [circles]);
+
 
   return (
     <div style={{
@@ -206,11 +234,12 @@ const App = () => {
       height: "100vh"
     }}>
       <svg viewBox="0 0 100 100">
-        {circles.map(circle => {
+        {circles.map((circle, key) => {
           let nextData = circle.next.map((thisNext) => {
             return circles.find(c => c.id === thisNext)
           })
           return <Circle
+            key={key + 30}
             current={current}
             setCurrent={setCurrent}
             data={circle}

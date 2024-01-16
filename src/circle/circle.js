@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import "./circle.css";
-import { v4 as uuidv4 } from "uuid";
 
 function Text(props) {
     const { text, circle, r } = props;
@@ -84,8 +83,8 @@ function Line(props) {
 }
 
 const Circle = (props) => {
-    const { nextData, data, current, setCurrent, } = props;
-    const { loc, color, text, layer, deleteNode, checked } = data;
+    const { nextData, data, current, } = props;
+    const { loc, text, layer, deleteNode } = data;
     const r = 4.5;
 
     const isInPath = (circleId) => {

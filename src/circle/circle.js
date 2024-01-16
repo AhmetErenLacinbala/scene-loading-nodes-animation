@@ -11,7 +11,7 @@ function Text(props) {
     const [bottomTextContent, setBottomTextContent] = useState([]);
 
     useEffect(() => {
-        if (circle.mesh && circle.checked) {
+        if (circle.mesh && circle.deleteNode !== undefined) {
             setBottomTextClass("textBottomAfter");
             setTopTextClass("textTopAfter1");
             setBottomTextContent(['(Has Mesh)']);
@@ -31,7 +31,7 @@ function Text(props) {
     return (
         <>
             <text
-                fontSize="1.8"
+                fontSize="1.7"
                 fill='white'
                 className={`text ${topTextClass}`}
                 x={loc.x}
@@ -39,10 +39,10 @@ function Text(props) {
                 textAnchor="middle">
                 {text}
             </text>
-            {circle.checked && (
+            {circle.deleteNode !== undefined && (
                 <text
-                    fontSize="1.4"
-                    fill={circle.deleteNode ? "red" : "white"}
+                    fontSize="1.25"
+                    fill={circle.deleteNode ? "#BA4E4E" : "white"}
                     className={`text textBottom ${bottomTextClass}`}
                     x={loc.x}
                     y={loc.y + yOffset}
@@ -162,11 +162,24 @@ const Circle = (props) => {
                     r={r}
                     strokeDashoffset={r * Math.PI * 2 + 1}
                     strokeDasharray={r * Math.PI * 2 + 1}
-                    stroke="red"
+                    stroke="#BA4E4E"
                     strokeWidth="0.4"
                     fill="none"
                     className="circle-path" />
             )}
+            {
+                (deleteNode === false) && (
+                    <circle
+                        cx={loc.x}
+                        cy={loc.y}
+                        r={r}
+                        strokeDashoffset={r * Math.PI * 2 + 1}
+                        strokeDasharray={r * Math.PI * 2 + 1}
+                        stroke="#45BD4E"
+                        strokeWidth="0.4"
+                        fill="none"
+                        className="circle-path" />
+                )}
 
 
 

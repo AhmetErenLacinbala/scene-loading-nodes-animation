@@ -3,13 +3,9 @@ import Circle from './circle/circle.js';
 
 const initialCircles = [
   {
-    deleteNode: false,
-    checked: false,
     mesh: false,
     id: 0,
-    layer: 0,
     text: "root",
-    color: "gray",
     next: [1, 2, 3, 4],
     loc: {
       x: 50,
@@ -17,13 +13,9 @@ const initialCircles = [
     },
   },
   {
-    deleteNode: false,
-    checked: false,
     mesh: false,
     id: 1,
-    layer: 1,
     text: "Camera",
-    color: "gray",
     next: [],
     loc: {
       x: 10,
@@ -31,13 +23,9 @@ const initialCircles = [
     }
   },
   {
-    deleteNode: false,
-    checked: false,
     mesh: false,
     id: 2,
-    layer: 1,
     text: "Empty",
-    color: "gray",
     next: [5, 6],
     loc: {
       x: 35,
@@ -45,13 +33,9 @@ const initialCircles = [
     }
   },
   {
-    deleteNode: false,
-    checked: false,
     mesh: false,
     id: 3,
-    layer: 1,
     text: "Empty",
-    color: "gray",
     next: [7, 8],
     loc: {
       x: 65,
@@ -59,13 +43,9 @@ const initialCircles = [
     }
   },
   {
-    deleteNode: false,
-    checked: false,
     mesh: false,
     id: 4,
-    layer: 1,
     text: "Empty",
-    color: "gray",
     next: [9],
     loc: {
       x: 90,
@@ -74,13 +54,9 @@ const initialCircles = [
   },
   //---------------------------------------
   {
-    deleteNode: false,
-    checked: false,
     mesh: false,
     id: 5,
-    layer: 2,
     text: "Armature",
-    color: "gray",
     next: [],
     loc: {
       x: 27,
@@ -89,13 +65,9 @@ const initialCircles = [
   },
 
   {
-    deleteNode: false,
-    checked: false,
     mesh: true,
     id: 6,
-    layer: 2,
     text: "Cube",
-    color: "gray",
     next: [],
     loc: {
       x: 43,
@@ -104,13 +76,9 @@ const initialCircles = [
   },
 
   {
-    deleteNode: false,
-    checked: false,
     mesh: false,
     id: 7,
-    layer: 2,
     text: "Camera 2",
-    color: "gray",
     next: [],
     loc: {
       x: 57,
@@ -119,13 +87,9 @@ const initialCircles = [
   },
 
   {
-    deleteNode: false,
-    checked: false,
     mesh: false,
     id: 8,
-    layer: 2,
     text: "Armature",
-    color: "gray",
     next: [],
     loc: {
       x: 73,
@@ -133,13 +97,9 @@ const initialCircles = [
     }
   },
   {
-    deleteNode: false,
-    checked: false,
     mesh: true,
     id: 9,
-    layer: 2,
     text: "Skybox",
-    color: "gray",
     next: [],
     loc: {
       x: 90,
@@ -150,7 +110,7 @@ const initialCircles = [
 
 
 const App = () => {
-  const [circles, setCircles] = useState([...initialCircles]);
+  const [circles, setCircles] = useState(initialCircles)
   const [current, setCurrent] = useState({
     current: {
       ...circles[0]
@@ -167,25 +127,24 @@ const App = () => {
             const newNextIndex = prev.nextIndex + 1;
             const nextId = prev.current.next[newNextIndex];
             const nextTemp = circles.find(circle => circle.id === nextId);
-
-            setCircles((prevCircles) => prevCircles.map(circle => {
-              if (circle.id === nextTemp.id) {
-                return { ...circle, checked: true };
+            if (nextTemp.next.length === 0) {
+              if (!nextTemp.mesh) {
+                setCircles((prev) => prev.map(circle => {
+                  if (circle.id === nextTemp.id) {
+                    return { ...circle, deleteNode: true, }
+                  }
+                  return { ...circle }
+                }))
               }
-              return circle;
-            }));
-
-
-            if (!nextTemp.mesh && nextTemp.next.length === 0) {
-              setCircles((prev) => prev.map(circle => {
-                if (circle.id === nextTemp.id) {
-                  return { ...circle, deleteNode: true, }
-                }
-                return { ...circle }
-              }))
+              else {
+                setCircles((prev) => prev.map(circle => {
+                  if (circle.id === nextTemp.id) {
+                    return { ...circle, deleteNode: false, }
+                  }
+                  return { ...circle }
+                }))
+              }
             }
-
-
             return {
               current: { ...nextTemp },
               nextIndex: -1,
@@ -199,11 +158,18 @@ const App = () => {
               const parentTemp = circles.find(circle => circle.id === parentId);
               const parentNextIndex = parentTemp.next.indexOf(currentId);
               const children = circles.filter(circle => parentTemp.next.includes(circle.id));
-
               if (children.every(child => child.deleteNode)) {
                 setCircles((prev) => prev.map(circle => {
                   if (circle.id === parentTemp.id) {
                     return { ...circle, deleteNode: true }
+                  }
+                  return { ...circle }
+                }))
+              }
+              else if (children.some(child => child.deleteNode === false)) {
+                setCircles((prev) => prev.map(circle => {
+                  if (circle.id === parentTemp.id) {
+                    return { ...circle, deleteNode: false }
                   }
                   return { ...circle }
                 }))
